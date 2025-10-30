@@ -35,5 +35,13 @@ module.exports = (sequelize) => {
     }
   );
 
+  User.associate = (models) => {
+  User.hasMany(models.Asistencia, {
+    foreignKey: "creadoPor",
+    as: "asistenciasCreadas",
+  });
+};
+
+
   return User;
 };
