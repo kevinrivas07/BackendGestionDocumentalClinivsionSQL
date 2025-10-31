@@ -13,8 +13,12 @@ module.exports = (sequelize) => {
       username: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
+        unique: {
+          name: 'unique_username',
+          msg: 'El nombre de usuario ya está en uso',
+        },
       },
+
       email: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -36,11 +40,11 @@ module.exports = (sequelize) => {
   );
 
   User.associate = (models) => {
-  User.hasMany(models.Asistencia, {
-    foreignKey: "creadoPor",
-    as: "asistenciasCreadas",
-  });
-};
+    User.hasMany(models.Asistencia, {
+      foreignKey: "creadoPor",
+      as: "asistenciasCreadas",
+    });
+  };
 
 
   return User;

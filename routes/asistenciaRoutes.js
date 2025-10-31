@@ -35,39 +35,40 @@ router.post("/", authMiddleware, async (req, res) => {
 // -------------------- ASISTENTES --------------------
 const maxAsistentes = 25;
 
-// Coordenadas ajustadas para los cuadros del formato
-const baseY = 510;   // Altura inicial (primera línea)
-const step = 22.4;   // Espaciado exacto entre filas
+// Coordenadas ajustadas para el formato exacto
+const nombreX = 135;
+const cargoX = 320;
+const firmaX = 475;
 
-// Columnas ajustadas para centrar texto en cada cuadro
-const nombreX = 130; // Columna NOMBRE
-const cargoX = 315;  // Columna CARGO
-const firmaX = 475;  // Columna FIRMA
+// 🔧 Ajuste manual (más confiable que la interpolación)
+const baseY = 508; // posición de la primera fila
+const step = 17.6; // separación exacta entre líneas (3 mm aprox)
 
 const totalAsistentes = Array.isArray(data.asistentes)
   ? data.asistentes.length
   : 0;
 
-for (let i = 0; i < totalAsistentes; i++) {
+for (let i = 0; i < totalAsistentes && i < maxAsistentes; i++) {
   const a = data.asistentes[i] || {};
   const y = baseY - i * step;
 
-  // Nombre y cargo centrados dentro del cuadro
+  // Nombre
   page.drawText(a.nombre || "", {
     x: nombreX,
-    y: y,
+    y: y - 2, // centrado verticalmente en la celda
     size: 10,
     font,
   });
 
+  // Cargo
   page.drawText(a.cargo || "", {
     x: cargoX,
-    y: y,
+    y: y - 2,
     size: 10,
     font,
   });
 
-  // Firma (si hay imagen)
+  // Firma
   if (a.firma && a.firma.startsWith("data:image")) {
     const match = a.firma.match(/^data:(image\/\w+);base64,(.+)$/);
     if (match) {
@@ -85,7 +86,7 @@ for (let i = 0; i < totalAsistentes; i++) {
 
       page.drawImage(embeddedImage, {
         x: firmaX,
-        y: y - sigHeight / 2 + 6,
+        y: y - sigHeight / 2 + 5,
         width: sigWidth,
         height: sigHeight,
       });
@@ -96,7 +97,7 @@ for (let i = 0; i < totalAsistentes; i++) {
 // -------------------- LÍNEAS EN ESPACIOS VACÍOS --------------------
 if (totalAsistentes < maxAsistentes) {
   const fromY = baseY - totalAsistentes * step + 4;
-  const toY = baseY - (maxAsistentes - 1) * step - 10;
+  const toY = baseY - (maxAsistentes - 1) * step - 8;
 
   const drawLine = (x) => {
     page.drawLine({
@@ -106,10 +107,9 @@ if (totalAsistentes < maxAsistentes) {
     });
   };
 
-  // Líneas ajustadas al borde derecho de cada columna
-  drawLine(nombreX + 75); // Línea nombres
-  drawLine(cargoX + 75);  // Línea cargos
-  drawLine(firmaX + 75);  // Línea firmas
+  drawLine(nombreX + 82); // Línea nombres
+  drawLine(cargoX + 70);  // Línea cargos
+  drawLine(firmaX + 65);  // Línea firmas
 }
 
 
