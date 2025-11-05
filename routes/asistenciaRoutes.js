@@ -23,14 +23,16 @@ router.post("/", authMiddleware, async (req, res) => {
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
     // -------------------- CABECERA --------------------
-    page.drawText(`${data.fecha || ""}`, { x: 170, y: 651, size: 12, font });
-    page.drawText(`${data.tema || ""}`, { x: 170, y: 633, size: 12, font });
-    page.drawText(`${data.responsable || ""}`, { x: 170, y: 615, size: 12, font });
-    page.drawText(`${data.cargo || ""}`, { x: 170, y: 597, size: 12, font });
-    page.drawText(`${data.modalidad || ""}`, { x: 170, y: 579, size: 12, font });
-    page.drawText(`${data.sede || ""}`, { x: 440, y: 579, size: 12, font });
-    page.drawText(`${data.horaInicio || ""}`, { x: 170, y: 561, size: 12, font });
-    page.drawText(`${data.horaFin || ""}`, { x: 440, y: 561, size: 12, font });
+page.drawText(`${data.fecha || ""}`, { x: 175, y: 654, size: 12, font });
+page.drawText(`${data.tema || ""}`, { x: 175, y: 636, size: 12, font });
+page.drawText(`${data.responsable || ""}`, { x: 175, y: 618, size: 12, font });
+page.drawText(`${data.cargo || ""}`, { x: 175, y: 600, size: 12, font });
+page.drawText(`${data.modalidad || ""}`, { x: 175, y: 582, size: 12, font });
+page.drawText(`${data.sede || ""}`, { x: 445, y: 582, size: 12, font });
+page.drawText(`${data.horaInicio || ""}`, { x: 175, y: 564, size: 12, font });
+page.drawText(`${data.horaFin || ""}`, { x: 445, y: 564, size: 12, font });
+
+
 
 // -------------------- ASISTENTES --------------------
 const maxAsistentes = 25;
@@ -109,7 +111,7 @@ if (totalAsistentes < maxAsistentes) {
 
   drawLine(nombreX + 82); // Línea nombres
   drawLine(cargoX + 70);  // Línea cargos
-  drawLine(firmaX + 65);  // Línea firmas
+  drawLine(firmaX + 55);  // Línea firmas
 }
 
 
