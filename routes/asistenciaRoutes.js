@@ -23,95 +23,91 @@ router.post("/", authMiddleware, async (req, res) => {
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
     // -------------------- CABECERA --------------------
-    page.drawText(`${data.fecha || ""}`, { x: 170, y: 651, size: 12, font });
-    page.drawText(`${data.tema || ""}`, { x: 170, y: 633, size: 12, font });
-    page.drawText(`${data.responsable || ""}`, { x: 170, y: 615, size: 12, font });
-    page.drawText(`${data.cargo || ""}`, { x: 170, y: 597, size: 12, font });
-    page.drawText(`${data.modalidad || ""}`, { x: 170, y: 579, size: 12, font });
-    page.drawText(`${data.sede || ""}`, { x: 440, y: 579, size: 12, font });
-    page.drawText(`${data.horaInicio || ""}`, { x: 170, y: 561, size: 12, font });
-    page.drawText(`${data.horaFin || ""}`, { x: 440, y: 561, size: 12, font });
+    page.drawText(`${data.fecha || ""}`, { x: 175, y: 652, size: 12, font });
+    page.drawText(`${data.tema || ""}`, { x: 175, y: 634, size: 12, font });
+    page.drawText(`${data.responsable || ""}`, { x: 175, y: 616, size: 12, font });
+    page.drawText(`${data.cargo || ""}`, { x: 175, y: 598, size: 12, font });
+    page.drawText(`${data.modalidad || ""}`, { x: 175, y: 580, size: 12, font });
+    page.drawText(`${data.sede || ""}`, { x: 445, y: 580, size: 12, font });
+    page.drawText(`${data.horaInicio || ""}`, { x: 175, y: 562, size: 12, font });
+    page.drawText(`${data.horaFin || ""}`, { x: 445, y: 562, size: 12, font });
 
-// -------------------- ASISTENTES --------------------
-const maxAsistentes = 25;
+    // -------------------- ASISTENTES --------------------
+    const maxAsistentes = 25;
 
-// Coordenadas ajustadas para el formato exacto
-const nombreX = 135;
-const cargoX = 320;
-const firmaX = 475;
+    const nombreX = 135;
+    const cargoX = 320;
+    const firmaX = 475;
 
-// 🔧 Ajuste manual (más confiable que la interpolación)
-const baseY = 508; // posición de la primera fila
-const step = 17.6; // separación exacta entre líneas (3 mm aprox)
+    const baseY = 508;
+    const step = 17.6;
 
-const totalAsistentes = Array.isArray(data.asistentes)
-  ? data.asistentes.length
-  : 0;
+    const totalAsistentes = Array.isArray(data.asistentes)
+      ? data.asistentes.length
+      : 0;
 
-for (let i = 0; i < totalAsistentes && i < maxAsistentes; i++) {
-  const a = data.asistentes[i] || {};
-  const y = baseY - i * step;
+    for (let i = 0; i < totalAsistentes && i < maxAsistentes; i++) {
+      const a = data.asistentes[i] || {};
+      const y = baseY - i * step;
 
-  // Nombre
-  page.drawText(a.nombre || "", {
-    x: nombreX,
-    y: y - 2, // centrado verticalmente en la celda
-    size: 10,
-    font,
-  });
-
-  // Cargo
-  page.drawText(a.cargo || "", {
-    x: cargoX,
-    y: y - 2,
-    size: 10,
-    font,
-  });
-
-  // Firma
-  if (a.firma && a.firma.startsWith("data:image")) {
-    const match = a.firma.match(/^data:(image\/\w+);base64,(.+)$/);
-    if (match) {
-      const mime = match[1];
-      const base64 = match[2];
-      const imgBytes = Buffer.from(base64, "base64");
-      const embeddedImage =
-        mime === "image/png"
-          ? await pdfDoc.embedPng(imgBytes)
-          : await pdfDoc.embedJpg(imgBytes);
-
-      const sigWidth = 90;
-      const sigHeight =
-        (embeddedImage.height / embeddedImage.width) * sigWidth || 30;
-
-      page.drawImage(embeddedImage, {
-        x: firmaX,
-        y: y - sigHeight / 2 + 5,
-        width: sigWidth,
-        height: sigHeight,
+       // Nombre
+      page.drawText(a.nombre || "", {
+        x: nombreX - 20,   // movido a la izquierda
+        y: y - 2,
+        size: 10,
+        font,
       });
+
+      // Cargo
+      page.drawText(a.cargo || "", {
+        x: cargoX - 15,    // movido a la izquierda
+        y: y - 2,
+        size: 10,
+        font,
+      });
+      
+      if (a.firma && a.firma.startsWith("data:image")) {
+        const match = a.firma.match(/^data:(image\/\w+);base64,(.+)$/);
+        if (match) {
+          const mime = match[1];
+          const base64 = match[2];
+          const imgBytes = Buffer.from(base64, "base64");
+          const embeddedImage =
+            mime === "image/png"
+              ? await pdfDoc.embedPng(imgBytes)
+              : await pdfDoc.embedJpg(imgBytes);
+
+          const sigWidth = 90;
+          const sigHeight =
+            (embeddedImage.height / embeddedImage.width) * sigWidth || 30;
+
+          page.drawImage(embeddedImage, {
+            x: firmaX,
+            y: y - sigHeight / 2 + 5,
+            width: sigWidth,
+            height: sigHeight,
+          });
+        }
+      }
     }
-  }
-}
 
-// -------------------- LÍNEAS EN ESPACIOS VACÍOS --------------------
-if (totalAsistentes < maxAsistentes) {
-  const fromY = baseY - totalAsistentes * step + 4;
-  const toY = baseY - (maxAsistentes - 1) * step - 8;
+    // -------------------- LÍNEAS VACÍAS --------------------
+    if (totalAsistentes < maxAsistentes) {
+      const fromY = baseY - totalAsistentes * step + 4;
+      const toY = baseY - (maxAsistentes - 1) * step - 8;
 
-  const drawLine = (x) => {
-    page.drawLine({
-      start: { x, y: fromY },
-      end: { x, y: toY },
-      thickness: 1,
-    });
-  };
+      const drawLine = (x) => {
+        page.drawLine({
+          start: { x, y: fromY },
+          end: { x, y: toY },
+          thickness: 1,
+        });
+      };
 
-  drawLine(nombreX + 82); // Línea nombres
-  drawLine(cargoX + 70);  // Línea cargos
-  drawLine(firmaX + 65);  // Línea firmas
-}
-
+      drawLine(nombreX + 62);
+      drawLine(cargoX + 50);
+      drawLine(firmaX + 35);
+    }
 
     // 📂 Guardar PDF
     const finalPdf = await pdfDoc.save();
@@ -123,9 +119,8 @@ if (totalAsistentes < maxAsistentes) {
     const pdfPath = path.join(pdfDir, pdfFileName);
     fs.writeFileSync(pdfPath, pdfBuffer);
 
-    // 💾 Guardar en BD
     await Asistencia.create({
-      fecha: data.fecha || new Date(),
+      fecha: data.fecha || new Date().toISOString().split("T")[0],
       tema: data.tema,
       responsable: data.responsable,
       cargo: data.cargo,
@@ -146,6 +141,50 @@ if (totalAsistentes < maxAsistentes) {
   } catch (err) {
     console.error("❌ Error generando PDF:", err);
     res.status(500).json({ error: "Error generando PDF" });
+  }
+});
+
+// -------------------------------------------------------------
+// 📌 Obtener lista de asistencias
+// -------------------------------------------------------------
+router.get("/", authMiddleware, async (req, res) => {
+  try {
+    const asistencias = await Asistencia.findAll({
+      include: [
+        {
+          model: User,
+          as: "usuarioCreador",
+          attributes: ["id", "username", "email"],
+        },
+      ],
+      order: [["id", "DESC"]],
+    });
+
+    res.json(asistencias);
+  } catch (err) {
+    console.error("❌ Error cargando asistencias:", err);
+    res.status(500).json({ error: "Error cargando asistencias" });
+  }
+});
+
+// -------------------------------------------------------------
+// 📄 Descargar PDF
+// -------------------------------------------------------------
+router.get("/:id/pdf", authMiddleware, async (req, res) => {
+  try {
+    const asistencia = await Asistencia.findByPk(req.params.id);
+    if (!asistencia)
+      return res.status(404).json({ error: "Asistencia no encontrada" });
+
+    const pdfPath = path.join(__dirname, "..", asistencia.pdfPath);
+    if (!fs.existsSync(pdfPath)) {
+      return res.status(404).json({ error: "Archivo PDF no encontrado" });
+    }
+
+    res.download(pdfPath, `Asistencia_${asistencia.id}.pdf`);
+  } catch (err) {
+    console.error("❌ Error descargando PDF:", err);
+    res.status(500).json({ error: "Error descargando PDF" });
   }
 });
 

@@ -17,10 +17,10 @@ const sequelize = new Sequelize(
 );
 
 // ✅ Importar modelos correctamente
-const User = require("./User")(sequelize, DataTypes);
-const InfoUser = require("./InfoUser")(sequelize, DataTypes);
-const Asistencia = require("./Asistencia")(sequelize, DataTypes);
-const Dotacion = require("./Dotacion")(sequelize, DataTypes);
+const User = require("./User")(sequelize);
+const InfoUser = require("./InfoUser")(sequelize);
+const Asistencia = require("./Asistencia")(sequelize);
+const Dotacion = require("./Dotacion")(sequelize);
 
 // ✅ Relaciones
 User.hasOne(InfoUser, { foreignKey: "userId", as: "info" });
